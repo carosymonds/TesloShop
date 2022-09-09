@@ -5,15 +5,10 @@ import {NextResponse} from 'next/server';
 export async function middleware(req : any) {
     console.log("Midddleware File", req.nextUrl);
 
+    const session: any = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
+
     if(req.nextUrl.pathname.startsWith("/admin")){
         const url = req.nextUrl.origin;
-
-        const session: any = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
-    
-        if ( !session ) {
-            const requestedPage = req.nextUrl.pathname;
-            return NextResponse.redirect(`http://localhost:3000/auth/login?p=${ requestedPage }`);
-        }
     
         const validRoles = ['admin','super-user','SEO'];
     
@@ -22,7 +17,10 @@ export async function middleware(req : any) {
         }
     
     }
-
+    if ( !session ) {
+        const requestedPage = req.nextUrl.pathname;
+        return NextResponse.redirect(`http://localhost:3000/auth/login?p=${ requestedPage }`);
+    }
 
     return NextResponse.next();
 
@@ -30,5 +28,5 @@ export async function middleware(req : any) {
 }
 
 export const config= {
-    matcher: ["/cart", "/admin/:path*"]
+    matcher: ["/cart/:path*", "/admin/:path*"]
 }
