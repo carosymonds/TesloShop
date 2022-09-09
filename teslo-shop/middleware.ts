@@ -1,0 +1,34 @@
+import { getToken } from 'next-auth/jwt';
+import {NextResponse} from 'next/server';
+
+
+export async function middleware(req : any) {
+    console.log("Midddleware File", req.nextUrl);
+
+    if(req.nextUrl.pathname.startsWith("/admin")){
+        const url = req.nextUrl.origin;
+
+        const session: any = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
+    
+        if ( !session ) {
+            const requestedPage = req.nextUrl.pathname;
+            return NextResponse.redirect(`http://localhost:3000/auth/login?p=${ requestedPage }`);
+        }
+    
+        const validRoles = ['admin','super-user','SEO'];
+    
+        if ( !validRoles.includes( session.user.role ) ) {
+            return NextResponse.redirect("http://localhost:3000/");
+        }
+    
+    }
+
+
+    return NextResponse.next();
+
+
+}
+
+export const config= {
+    matcher: ["/cart", "/admin/:path*"]
+}
